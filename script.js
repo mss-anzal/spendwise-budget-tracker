@@ -1,122 +1,139 @@
 
-"use strict";
+const totalBudget = 80000;
 
-// 1. Variables to store budget information
-let monthlyBudget = 0;
 let expenses = [];
 
-// 2. Function to collect the user's budget
-function getBudget() {
-    let input = prompt("Enter your monthly budget in KSh:");
+const expenseForm = document.querySelector("#expense-form");
+const expenseName = document.querySelector("#expense-name");
+const expenseAmount = document.querySelector("#expense-amount");
+const expenseCategory = document.querySelector("#expense-category");
 
-    if (input === null || input.trim() === "") {
-        console.log("Budget entry cancelled or left empty.");
-        return null;
-    }
+const totalSpentElement = document.querySelector("#total-spent");
+const remainingBudgetElement = document.querySelector("#remaining-budget");
+const budgetMessage = document.querySelector("#budget-message");
+const expenseList = document.querySelector("#expense-list");
+const expenseCount = document.querySelector("#expense-count");
 
-    let budget = Number(input);
+const totalBudgetElement = document.querySelector("#total-budget");
 
-    if (!Number.isFinite(budget) || budget < 0) {
-        console.log("Please enter a valid, non-negative budget.");
-        return null;
-    }
+totalBudgetElement.textContent = formatMoney(totalBudget);
 
-    return budget;
+function formatMoney(amount) {
+    return "KSh " + amount.toLocaleString("en-KE", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 }
 
-// 3. Function to collect expense information
-function getExpenses() {
-    let categories = [
-        "Food",
-        "Transport",
-        "Rent",
-        "Entertainment",
-        "Savings",
-        "Utilities"
-    ];
-
-    let expenseList = [];
-
-    for (let category of categories) {
-        let input = prompt(
-            "Enter your " + category + " amount in KSh:"
-        );
-
-        if (input === null || input.trim() === "") {
-            console.log("Expense entry cancelled or left empty.");
-            return null;
-        }
-
-        let amount = Number(input);
-
-        if (!Number.isFinite(amount) || amount < 0) {
-            console.log("Invalid amount for " + category + ".");
-            return null;
-        }
-
-        expenseList.push({
-            category: category,
-            amount: amount
-        });
-    }
-
-    return expenseList;
-}
-
-// 4. Function to calculate total expenses
-function calculateTotalExpenses(expenseList) {
+// Calculate total expenses using a loop.
+function calculateTotal() {
     let total = 0;
 
-    for (let expense of expenseList) {
+    for (const expense of expenses) {
         total += expense.amount;
     }
 
     return total;
 }
 
-// 5. Function to calculate the remaining balance
-function calculateRemainingBalance(budget, totalExpenses) {
-    return budget - totalExpenses;
-}
+// Display expenses and update the dashboard.
+function updateDashboard() {
+    const totalSpent = calculateTotal();
+    const remaining = totalBudget - totalSpent;
 
-// 6. Function to display the results
-function displayResults(budget, expenseList) {
-    let totalExpenses = calculateTotalExpenses(expenseList);
-    let remainingBalance = calculateRemainingBalance(
-        budget,
-        totalExpenses
-    );
+    totalSpentElement.textContent = formatMoney(totalSpent);
+    remainingBudgetElement.textContent = formatMoney(remaining);
 
-    console.log("===== SPENDWISE BUDGET REPORT =====");
-    console.log("Monthly Budget: KSh " + budget.toFixed(2));
-
-    console.log("--- Expense Breakdown ---");
-
-    for (let expense of expenseList) {
-        console.log(
-            expense.category + ": KSh " + expense.amount.toFixed(2)
-        );
-    }
-
-    console.log("Total Expenses: KSh " + totalExpenses.toFixed(2));
-    console.log(
-        "Remaining Balance: KSh " + remainingBalance.toFixed(2)
-    );
-
-    if (remainingBalance < 0) {
-        console.log("Warning: You have exceeded your budget!");
+    // Use conditionals to evaluate the budget.
+    if (totalSpent > totalBudget) {
+        budgetMessage.textContent =
+            "Warning: You have exceeded your budget!";
+    } else if (totalSpent >= totalBudget * 0.8) {
+        budgetMessage.textContent =
+            "Caution: You have used at least 80% of your budget.";
     } else {
-        console.log("Good job! You are within your budget.");
+        budgetMessage.textContent =
+            "Good job! Your spending is within your budget.";
+    }
+
+    // Clear the old rows before displaying updated records.
+    expenseList.replaceChildren();
+
+    // Loop through the array and display each expense.
+    for (const expense of expenses) {
+        const row = document.createElement("tr");
+
+        const nameCell = document.createElement("td");
+        nameCell.textContent = expense.name;
+
+        const categoryCell = document.createElement("td");
+        categoryCell.textContent = expense.category;
+
+        const amountCell = document.createElement("td");
+        amountCell.textContent = formatMoney(expense.amount);
+
+        const actionCell = document.createElement("td");
+        const deleteButton = document.createElement("button");
+
+        deleteButton.type = "button";
+        deleteButton.textContent = "Delete";
+
+        // Handle deleting an expense.
+        deleteButton.addEventListener("click", function () {
+            expenses = expenses.filter(
+                item => item.id !== expense.id
+            );
+
+            updateDashboard();
+        });
+
+        actionCell.appendChild(deleteButton);
+
+        row.append(
+            nameCell,
+            categoryCell,
+            amountCell,
+            actionCell
+        );
+
+        expenseList.appendChild(row);
+    }
+
+    if (expenses.length === 0) {
+        expenseCount.textContent = "No expenses added yet.";
+    } else {
+        expenseCount.textContent =
+            expenses.length + " expense(s) recorded.";
     }
 }
 
-// 7. Run the application
-monthlyBudget = getBudget();
+// Handle form submission.
+expenseForm.addEventListener("submit", function (event) {
+    event.preventDefault();
 
-if (monthlyBudget !== null) {
-    expenses = getExpenses();
+    const name = expenseName.value.trim();
+    const amount = Number(expenseAmount.value);
+    const category = expenseCategory.value;
 
-    if (expenses !== null) {
-        displayResults(monthlyBudget, expenses);
+    // Validate the input using conditionals.
+    if (name === "" || !Number.isFinite(amount) || amount <= 0 || category === "") {
+        budgetMessage.textContent =
+            "Please enter a valid name, positive amount, and category.";
+        return;
     }
-}
+
+    // Store each expense as an object inside an array.
+    expenses.push({
+        id: Date.now() + Math.random(),
+        name: name,
+        amount: amount,
+        category: category
+    });
+
+    updateDashboard();
+
+    expenseForm.reset();
+});
+
+// Show the initial dashboard.
+updateDashboard();

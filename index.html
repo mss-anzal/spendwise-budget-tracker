@@ -45,23 +45,30 @@
                 </div>
             </header>
 
-            <!-- Summary -->
-            <section class="summary">
-                <div>
-                    <p>Total Budget</p>
-                    <h2>KSh 80,000</h2>
-                </div>
+            ```html
+<!-- Summary -->
+<section class="summary">
+    <div>
+        <p>Total Budget</p>
+        <h2 id="total-budget">KSh 80,000</h2>
+    </div>
 
-                <div>
-                    <p>Total Spent</p>
-                    <h2>KSh 52,450</h2>
-                </div>
+    <div>
+        <p>Total Spent</p>
+        <h2 id="total-spent">KSh 0</h2>
+    </div>
 
-                <div>
-                    <p>Remaining</p>
-                    <h2>KSh 27,550</h2>
-                </div>
-            </section>
+    <div>
+        <p>Remaining</p>
+        <h2 id="remaining-budget">KSh 80,000</h2>
+    </div>
+</section>
+
+<!-- Budget feedback -->
+<p id="budget-message" role="status" aria-live="polite">
+    Your budget is ready. Add an expense to get started.
+</p>
+```
 
             <!-- Category Cards -->
             <section class="categories">
@@ -151,7 +158,66 @@
                 </article>
 
             </section>
+<!-- Add Expense Form -->
+<section class="expense-section">
+    <h2>Add a New Expense</h2>
 
+    <form id="expense-form">
+        <label for="expense-name">Expense name</label>
+        <input
+            type="text"
+            id="expense-name"
+            placeholder="e.g. Lunch"
+            required
+        >
+
+        <label for="expense-amount">Amount (KSh)</label>
+        <input
+            type="number"
+            id="expense-amount"
+            placeholder="e.g. 500"
+            min="0.01"
+            step="0.01"
+            required
+        >
+
+        <label for="expense-category">Category</label>
+        <select id="expense-category" required>
+            <option value="">Choose a category</option>
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Rent">Rent</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Savings">Savings</option>
+            <option value="Utilities">Utilities</option>
+        </select>
+
+        <button type="submit">Add Expense</button>
+    </form>
+</section>
+
+<!-- Expense Records -->
+<section class="expense-section">
+    <h2>Recent Transactions</h2>
+
+    <p id="expense-count">No expenses added yet.</p>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Expense</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="expense-list">
+                <!-- JavaScript will add expense rows here -->
+            </tbody>
+        </table>
+    </div>
+</section>
         </main>
     </div>
 
